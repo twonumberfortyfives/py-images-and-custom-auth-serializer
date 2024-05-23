@@ -6,9 +6,9 @@ from django.utils.translation import gettext_lazy as _
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
-        fields = ("id", "email", "password", "is_staff")  # be careful
-        read_only_fields = ("id", "is_staff")  # read-only fields
-        extra_kwargs = {  # important fields
+        fields = ("id", "email", "password", "is_staff")
+        read_only_fields = ("id", "is_staff")
+        extra_kwargs = {
             "password": {
                 "write_only": True,
                 "min_length": 5,
@@ -17,13 +17,13 @@ class UserSerializer(serializers.ModelSerializer):
 
     def create(
         self, validated_data
-    ):  # rewriting password creator so it will be encrypted!!!!
+    ):
         """Create user with encrypted password."""
         return get_user_model().objects.create_user(**validated_data)
 
     def update(
         self, instance, validated_data
-    ):  # rewriting update func specially for password field !!!!!
+    ):
         """Update user with encrypted password."""
         password = validated_data.pop("password", None)
         user = super().update(instance, validated_data)
@@ -57,9 +57,6 @@ class AuthTokenSerializer(serializers.Serializer):
                 password=password
             )
 
-            # The authenticate call simply returns None for is_active=False
-            # users. (Assuming the default ModelBackend authentication
-            # backend.)
             if not user:
                 msg = _("Unable to log in with provided credentials.")
                 raise serializers.ValidationError(msg, code="authorization")
